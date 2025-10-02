@@ -7,7 +7,7 @@ import Container from '@/components/Container';
 import Card from '@/components/Card';
 import Button from '@/components/Button';
 import Input from '@/components/Input';
-import { useToast } from '@/hooks/useToast';
+import { useToastContext } from '@/contexts/ToastContext';
 import { api } from '@/services/api';
 
 export default function AdminLoginPage() {
@@ -19,7 +19,7 @@ export default function AdminLoginPage() {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   
   const router = useRouter();
-  const { success, error: showError } = useToast();
+  const { success, error: showError } = useToastContext();
 
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {};
@@ -63,7 +63,9 @@ export default function AdminLoginPage() {
       router.push('/admin/leads');
     } catch (error) {
       console.error('Erro no login:', error);
-      showError(error instanceof Error ? error.message : 'Erro ao fazer login. Tente novamente.');
+      const errorMessage = error instanceof Error ? error.message : 'Erro ao fazer login. Tente novamente.';
+      console.log('Mostrando toast de erro:', errorMessage);
+      showError(errorMessage);
     } finally {
       setLoading(false);
     }

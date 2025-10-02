@@ -22,7 +22,10 @@ export function useToast() {
       : `${Date.now()}-${performance.now()}`;
     const newToast: Toast = { id, type, message, duration };
     
-    setToasts(prev => [...prev, newToast]);
+    setToasts(prev => {
+      console.log('Setting toasts:', [...prev, newToast]);
+      return [...prev, newToast];
+    });
     
     return id;
   }, []);
@@ -40,6 +43,7 @@ export function useToast() {
   }, [addToast]);
 
   const error = useCallback((message: string, duration?: number) => {
+    console.log('useToast error called with:', message);
     return addToast('error', message, duration);
   }, [addToast]);
 

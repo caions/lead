@@ -40,8 +40,14 @@ class ApiService {
           throw new Error('Não autorizado');
         }
         
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `Erro ${response.status}`);
+        let errorMessage = `Erro ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+        } catch {
+          // Se não conseguir fazer parse do JSON, usa a mensagem padrão
+        }
+        throw new Error(errorMessage);
       }
 
       return await response.json();
