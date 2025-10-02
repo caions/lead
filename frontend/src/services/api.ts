@@ -53,8 +53,9 @@ class ApiService {
     }
   }
 
-  async get<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, { method: 'GET' });
+  async get<T>(endpoint: string, params?: Record<string, any>): Promise<T> {
+    const url = params ? `${endpoint}?${new URLSearchParams(params).toString()}` : endpoint;
+    return this.request<T>(url, { method: 'GET' });
   }
 
   async post<T>(endpoint: string, data?: any): Promise<T> {
@@ -155,9 +156,8 @@ export interface FilterLeadsDto {
 }
 
 export interface LeadsResponse {
-  data: Lead[];
+  leads: Lead[];
   total: number;
   page: number;
   limit: number;
-  totalPages: number;
 }
