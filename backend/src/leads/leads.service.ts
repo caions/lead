@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Like, Between } from 'typeorm';
+import { Repository } from 'typeorm';
 import { Lead } from './entities/lead.entity';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
@@ -120,6 +120,20 @@ export class LeadsService {
       order: { created_at: 'DESC' },
     });
     
+    const toDateOnlyString = (value: Date | string | null | undefined): string => {
+      if (!value) return '';
+      const date = typeof value === 'string' ? new Date(value) : value;
+      if (isNaN(date.getTime())) return '';
+      return date.toISOString().split('T')[0];
+    };
+
+    const toISOStringSafe = (value: Date | string | null | undefined): string => {
+      if (!value) return '';
+      const date = typeof value === 'string' ? new Date(value) : value;
+      if (isNaN(date.getTime())) return '';
+      return date.toISOString();
+    };
+
     const headers = [
       'ID',
       'Nome',
@@ -147,8 +161,8 @@ export class LeadsService {
         `"${lead.email}"`,
         `"${lead.telefone}"`,
         `"${lead.cargo}"`,
-        lead.data_nascimento.toISOString().split('T')[0],
-        `"${lead.mensagem.replace(/"/g, '""')}"`,
+        toDateOnlyString(lead.data_nascimento),
+        `"${(lead.mensagem || '').replace(/"/g, '""')}"`,
         `"${lead.utm_source || ''}"`,
         `"${lead.utm_medium || ''}"`,
         `"${lead.utm_campaign || ''}"`,
@@ -156,8 +170,8 @@ export class LeadsService {
         `"${lead.utm_content || ''}"`,
         `"${lead.gclid || ''}"`,
         `"${lead.fbclid || ''}"`,
-        lead.created_at.toISOString(),
-        lead.updated_at.toISOString(),
+        toISOStringSafe(lead.created_at),
+        toISOStringSafe(lead.updated_at),
       ].join(',')),
     ];
     
