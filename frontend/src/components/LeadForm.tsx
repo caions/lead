@@ -6,6 +6,7 @@ import Input from '@/components/Input';
 import Textarea from '@/components/Textarea';
 import Button from '@/components/Button';
 import Alert from '@/components/Alert';
+import { useUTMCapture } from '@/hooks/useUTMCapture';
 
 interface FormData {
   nome: string;
@@ -49,28 +50,23 @@ export default function LeadForm() {
   const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null);
   const [submitMessage, setSubmitMessage] = useState('');
 
-  // Capturar UTMs da URL
-  const captureUTMs = () => {
-    if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search);
-      return {
-        utm_source: urlParams.get('utm_source') || '',
-        utm_medium: urlParams.get('utm_medium') || '',
-        utm_campaign: urlParams.get('utm_campaign') || '',
-        utm_term: urlParams.get('utm_term') || '',
-        utm_content: urlParams.get('utm_content') || '',
-        gclid: urlParams.get('gclid') || '',
-        fbclid: urlParams.get('fbclid') || '',
-      };
-    }
-    return {};
-  };
+  // Hook para captura de UTMs
+  const { utmData, getUTMData } = useUTMCapture();
 
-  // Inicializar UTMs quando o componente montar
+  // Atualizar formData com UTMs capturados
   React.useEffect(() => {
-    const utms = captureUTMs();
-    setFormData(prev => ({ ...prev, ...utms }));
-  }, []);
+    const currentUTMs = getUTMData();
+    setFormData(prev => ({
+      ...prev,
+      utm_source: currentUTMs.utm_source || '',
+      utm_medium: currentUTMs.utm_medium || '',
+      utm_campaign: currentUTMs.utm_campaign || '',
+      utm_term: currentUTMs.utm_term || '',
+      utm_content: currentUTMs.utm_content || '',
+      gclid: currentUTMs.gclid || '',
+      fbclid: currentUTMs.fbclid || '',
+    }));
+  }, [utmData, getUTMData]);
 
   const formatPhone = (value: string) => {
     // Remove tudo que não é número
@@ -88,32 +84,36 @@ export default function LeadForm() {
 
   const validateField = (fieldName: string, value: string): string | null => {
     switch (fieldName) {
-      case 'nome':
+      case 'nome': {
         if (!value.trim()) return 'O nome é obrigatório';
         if (value.trim().length < 2) return 'O nome deve ter pelo menos 2 caracteres';
         if (value.trim().split(' ').length < 2) return 'Digite o nome completo';
         return null;
+      }
       
-      case 'email':
+      case 'email': {
         if (!value.trim()) return 'O email é obrigatório';
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(value)) return 'Digite um email válido';
         return null;
+      }
       
-      case 'telefone':
+      case 'telefone': {
         if (!value.trim()) return 'O telefone é obrigatório';
         const cleanPhone = value.replace(/\D/g, '');
         if (cleanPhone.length < 10 || cleanPhone.length > 11) {
           return 'Telefone deve ter 10 ou 11 dígitos';
         }
         return null;
+      }
       
-      case 'cargo':
+      case 'cargo': {
         if (!value.trim()) return 'O cargo é obrigatório';
         if (value.trim().length < 2) return 'O cargo deve ter pelo menos 2 caracteres';
         return null;
+      }
       
-      case 'data_nascimento':
+      case 'data_nascimento': {
         if (!value) return 'A data de nascimento é obrigatória';
         const birthDate = new Date(value);
         const today = new Date();
@@ -121,11 +121,13 @@ export default function LeadForm() {
         if (age < 16) return 'Você deve ter pelo menos 16 anos';
         if (age > 100) return 'Data de nascimento inválida';
         return null;
+      }
       
-      case 'mensagem':
+      case 'mensagem': {
         if (!value.trim()) return 'A mensagem é obrigatória';
         if (value.trim().length < 10) return 'A mensagem deve ter pelo menos 10 caracteres';
         return null;
+      }
       
       default:
         return null;
