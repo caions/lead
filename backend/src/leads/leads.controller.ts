@@ -4,11 +4,13 @@ import { LeadsService } from './leads.service';
 import { CreateLeadDto } from './dto/create-lead.dto';
 import { UpdateLeadDto } from './dto/update-lead.dto';
 import { FilterLeadsDto } from './dto/filter-leads.dto';
+import { Public } from '../auth/public.decorator';
 
 @Controller('api/leads')
 export class LeadsController {
   constructor(private readonly leadsService: LeadsService) {}
 
+  @Public()
   @Post()
   async create(@Body() createLeadDto: CreateLeadDto) {
     const lead = await this.leadsService.create(createLeadDto);
