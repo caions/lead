@@ -72,63 +72,6 @@ export default function LeadForm() {
     setFormData(prev => ({ ...prev, ...utms }));
   }, []);
 
-  const validateForm = (): boolean => {
-    const newErrors: FormErrors = {};
-
-    // Validação do nome
-    if (!formData.nome.trim()) {
-      newErrors.nome = 'O nome é obrigatório';
-    } else if (formData.nome.trim().length < 2) {
-      newErrors.nome = 'O nome deve ter pelo menos 2 caracteres';
-    }
-
-    // Validação do email
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!formData.email.trim()) {
-      newErrors.email = 'O email é obrigatório';
-    } else if (!emailRegex.test(formData.email)) {
-      newErrors.email = 'Digite um email válido';
-    }
-
-    // Validação do telefone (formato brasileiro)
-    const phoneRegex = /^\(?[1-9]{2}\)? ?(?:[2-8]|9[1-9])\d{3}-?\d{4}$/;
-    if (!formData.telefone.trim()) {
-      newErrors.telefone = 'O telefone é obrigatório';
-    } else if (!phoneRegex.test(formData.telefone.replace(/\s/g, ''))) {
-      newErrors.telefone = 'Digite um telefone brasileiro válido (ex: (11) 99999-9999)';
-    }
-
-    // Validação do cargo
-    if (!formData.cargo.trim()) {
-      newErrors.cargo = 'O cargo é obrigatório';
-    }
-
-    // Validação da data de nascimento
-    if (!formData.data_nascimento) {
-      newErrors.data_nascimento = 'A data de nascimento é obrigatória';
-    } else {
-      const birthDate = new Date(formData.data_nascimento);
-      const today = new Date();
-      const age = today.getFullYear() - birthDate.getFullYear();
-      
-      if (age < 16) {
-        newErrors.data_nascimento = 'Você deve ter pelo menos 16 anos';
-      } else if (age > 100) {
-        newErrors.data_nascimento = 'Data de nascimento inválida';
-      }
-    }
-
-    // Validação da mensagem
-    if (!formData.mensagem.trim()) {
-      newErrors.mensagem = 'A mensagem é obrigatória';
-    } else if (formData.mensagem.trim().length < 10) {
-      newErrors.mensagem = 'A mensagem deve ter pelo menos 10 caracteres';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const formatPhone = (value: string) => {
     // Remove tudo que não é número
     const numbers = value.replace(/\D/g, '');
@@ -140,6 +83,52 @@ export default function LeadForm() {
       return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
     } else {
       return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+    }
+  };
+
+  const validateField = (fieldName: string, value: string): string | null => {
+    switch (fieldName) {
+      case 'nome':
+        if (!value.trim()) return 'O nome é obrigatório';
+        if (value.trim().length < 2) return 'O nome deve ter pelo menos 2 caracteres';
+        if (value.trim().split(' ').length < 2) return 'Digite o nome completo';
+        return null;
+      
+      case 'email':
+        if (!value.trim()) return 'O email é obrigatório';
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) return 'Digite um email válido';
+        return null;
+      
+      case 'telefone':
+        if (!value.trim()) return 'O telefone é obrigatório';
+        const cleanPhone = value.replace(/\D/g, '');
+        if (cleanPhone.length < 10 || cleanPhone.length > 11) {
+          return 'Telefone deve ter 10 ou 11 dígitos';
+        }
+        return null;
+      
+      case 'cargo':
+        if (!value.trim()) return 'O cargo é obrigatório';
+        if (value.trim().length < 2) return 'O cargo deve ter pelo menos 2 caracteres';
+        return null;
+      
+      case 'data_nascimento':
+        if (!value) return 'A data de nascimento é obrigatória';
+        const birthDate = new Date(value);
+        const today = new Date();
+        const age = today.getFullYear() - birthDate.getFullYear();
+        if (age < 16) return 'Você deve ter pelo menos 16 anos';
+        if (age > 100) return 'Data de nascimento inválida';
+        return null;
+      
+      case 'mensagem':
+        if (!value.trim()) return 'A mensagem é obrigatória';
+        if (value.trim().length < 10) return 'A mensagem deve ter pelo menos 10 caracteres';
+        return null;
+      
+      default:
+        return null;
     }
   };
 
@@ -156,6 +145,29 @@ export default function LeadForm() {
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
     }
+  };
+
+  const handleInputBlur = (field: keyof FormData, value: string) => {
+    const error = validateField(field, value);
+    setErrors(prev => ({ ...prev, [field]: error || '' }));
+  };
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+    let isValid = true;
+
+    Object.keys(formData).forEach(field => {
+      if (['nome', 'email', 'telefone', 'cargo', 'data_nascimento', 'mensagem'].includes(field)) {
+        const error = validateField(field, formData[field as keyof FormData] ?? '');
+        if (error) {
+          newErrors[field] = error;
+          isValid = false;
+        }
+      }
+    });
+
+    setErrors(newErrors);
+    return isValid;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -200,6 +212,7 @@ export default function LeadForm() {
           gclid: '',
           fbclid: '',
         });
+        setErrors({});
       } else {
         setSubmitStatus('error');
         setSubmitMessage(result.message || 'Erro ao cadastrar lead. Tente novamente.');
@@ -247,7 +260,9 @@ export default function LeadForm() {
                 label="Nome Completo"
                 value={formData.nome}
                 onChange={(e) => handleInputChange('nome', e.target.value)}
+                onBlur={(e) => handleInputBlur('nome', e.target.value)}
                 error={errors.nome}
+                helperText="Digite seu nome e sobrenome"
                 placeholder="Digite seu nome completo"
                 required
               />
@@ -257,7 +272,9 @@ export default function LeadForm() {
                 type="email"
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
+                onBlur={(e) => handleInputBlur('email', e.target.value)}
                 error={errors.email}
+                helperText="Digite um email válido"
                 placeholder="seu@email.com"
                 required
               />
@@ -268,7 +285,9 @@ export default function LeadForm() {
                 label="Telefone"
                 value={formData.telefone}
                 onChange={(e) => handleInputChange('telefone', e.target.value)}
+                onBlur={(e) => handleInputBlur('telefone', e.target.value)}
                 error={errors.telefone}
+                helperText="Formato: (XX) XXXXX-XXXX"
                 placeholder="(11) 99999-9999"
                 maxLength={15}
                 required
@@ -279,7 +298,9 @@ export default function LeadForm() {
                 type="date"
                 value={formData.data_nascimento}
                 onChange={(e) => handleInputChange('data_nascimento', e.target.value)}
+                onBlur={(e) => handleInputBlur('data_nascimento', e.target.value)}
                 error={errors.data_nascimento}
+                helperText="Você deve ter pelo menos 16 anos"
                 required
               />
             </div>
@@ -288,7 +309,9 @@ export default function LeadForm() {
               label="Cargo/Profissão"
               value={formData.cargo}
               onChange={(e) => handleInputChange('cargo', e.target.value)}
+              onBlur={(e) => handleInputBlur('cargo', e.target.value)}
               error={errors.cargo}
+              helperText="Ex: Desenvolvedor, Gerente, Analista..."
               placeholder="Ex: Desenvolvedor, Gerente, Analista..."
               required
             />
@@ -304,7 +327,9 @@ export default function LeadForm() {
               label="Mensagem"
               value={formData.mensagem}
               onChange={(e) => handleInputChange('mensagem', e.target.value)}
+              onBlur={(e) => handleInputBlur('mensagem', e.target.value)}
               error={errors.mensagem}
+              helperText="Mínimo 10 caracteres"
               placeholder="Conte-nos sobre seus objetivos, necessidades ou qualquer informação relevante..."
               rows={4}
               required
