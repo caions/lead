@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
@@ -131,12 +133,9 @@ export default function AdminLoginPage() {
 
 
             <div className="mt-6 text-center">
-              <a 
-                href="/" 
-                className="text-sm text-blue-600 hover:text-blue-500 font-medium"
-              >
+              <Link href="/" className="text-sm text-blue-600 hover:text-blue-500 font-medium">
                 ← Voltar ao formulário público
-              </a>
+              </Link>
             </div>
           </Card>
         </Container>

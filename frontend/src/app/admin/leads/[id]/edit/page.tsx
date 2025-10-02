@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Container from '@/components/Container';
@@ -34,13 +34,7 @@ export default function EditLeadPage() {
     mensagem: ''
   });
 
-  useEffect(() => {
-    if (leadId) {
-      fetchLead();
-    }
-  }, [leadId]);
-
-  const fetchLead = async () => {
+  const fetchLead = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.get<{ success: boolean; message: string; data: Lead }>(`/api/leads/${leadId}`);
@@ -62,7 +56,13 @@ export default function EditLeadPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [leadId, router, showError]);
+
+  useEffect(() => {
+    if (leadId) {
+      fetchLead();
+    }
+  }, [leadId, fetchLead]);
 
   const formatPhone = (value: string) => {
     // Remove tudo que não é número

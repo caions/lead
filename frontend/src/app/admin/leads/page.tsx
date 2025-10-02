@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Container from '@/components/Container';
@@ -12,7 +12,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { ConfirmModal } from '@/components/Modal';
 import { EyeIcon, EditIcon, TrashIcon, DownloadIcon, PlusIcon, UsersIcon, ChartIcon, CalendarIcon } from '@/components/Icons';
 import { useToast } from '@/hooks/useToast';
-import { api, Lead, LeadsResponse, FilterLeadsDto } from '@/services/api';
+import { api, Lead, LeadsResponse } from '@/services/api';
 
 export default function LeadsListPage() {
   const [leads, setLeads] = useState<Lead[]>([]);
@@ -30,10 +30,10 @@ export default function LeadsListPage() {
   const ITEMS_PER_PAGE = 10;
   const totalPages = Math.ceil(totalLeads / ITEMS_PER_PAGE);
 
-  const fetchLeads = async (page = 1, search = '') => {
+  const fetchLeads = useCallback(async (page = 1, search = '') => {
     try {
       setLoading(true);
-      const params: FilterLeadsDto = {
+      const params: Record<string, string | number | boolean | null | undefined> = {
         page,
         limit: ITEMS_PER_PAGE,
         ...(search && { nome: search })
@@ -50,11 +50,11 @@ export default function LeadsListPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [ITEMS_PER_PAGE, showError]);
 
   useEffect(() => {
     fetchLeads(1, searchTerm);
-  }, [searchTerm]);
+  }, [fetchLeads, searchTerm]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);

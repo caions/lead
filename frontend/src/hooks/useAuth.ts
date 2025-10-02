@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 
 interface User {
@@ -23,6 +23,20 @@ export function useAuth() {
   });
 
   const router = useRouter();
+
+  const logout = useCallback(() => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    
+    setAuthState({
+      isAuthenticated: false,
+      user: null,
+      token: null,
+      loading: false
+    });
+    
+    router.push('/admin/login');
+  }, [router]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -49,7 +63,7 @@ export function useAuth() {
         loading: false
       });
     }
-  }, []);
+  }, [logout]);
 
   const login = (token: string, user: User) => {
     localStorage.setItem('token', token);
@@ -61,20 +75,6 @@ export function useAuth() {
       token,
       loading: false
     });
-  };
-
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    
-    setAuthState({
-      isAuthenticated: false,
-      user: null,
-      token: null,
-      loading: false
-    });
-    
-    router.push('/admin/login');
   };
 
   const requireAuth = () => {

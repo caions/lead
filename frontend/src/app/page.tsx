@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Container from '@/components/Container';
@@ -98,18 +99,18 @@ export default function HomePage() {
                 Acesse o painel administrativo para gerenciar todos os leads capturados
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <a 
-                  href="/admin/login" 
+                <Link 
+                  href="/admin/login"
                   className="btn-primary bg-white text-blue-600 hover:bg-gray-100"
                 >
                   Login Admin
-                </a>
-                <a 
-                  href="/admin/leads" 
+                </Link>
+                <Link 
+                  href="/admin/leads"
                   className="btn-secondary bg-blue-500 hover:bg-blue-400 text-white border-blue-400"
                 >
                   Ver Leads
-                </a>
+                </Link>
               </div>
             </Card>
           </div>

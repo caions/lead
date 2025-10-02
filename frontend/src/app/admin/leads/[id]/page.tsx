@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import Header from '@/components/Header';
 import Container from '@/components/Container';
@@ -25,13 +25,7 @@ export default function LeadDetailsPage() {
 
   const leadId = params?.id as string;
 
-  useEffect(() => {
-    if (leadId) {
-      fetchLead();
-    }
-  }, [leadId]);
-
-  const fetchLead = async () => {
+  const fetchLead = useCallback(async () => {
     try {
       setLoading(true);
       console.log('Fetching lead with ID:', leadId);
@@ -45,7 +39,13 @@ export default function LeadDetailsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [leadId, router, showError]);
+
+  useEffect(() => {
+    if (leadId) {
+      fetchLead();
+    }
+  }, [leadId, fetchLead]);
 
   const handleDelete = async () => {
     if (!lead) return;

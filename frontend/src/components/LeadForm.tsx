@@ -66,7 +66,7 @@ export default function LeadForm() {
       gclid: currentUTMs.gclid || '',
       fbclid: currentUTMs.fbclid || '',
     }));
-  }, [utmData]);
+  }, [utmData, getUTMData]);
 
   const formatPhone = (value: string) => {
     // Remove tudo que não é número

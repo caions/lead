@@ -2,23 +2,23 @@
 
 import { useState, useCallback } from 'react';
 
-interface ApiResponse<T = any> {
+interface ApiResponse<T = unknown> {
   success: boolean;
   message: string;
   data?: T;
   errors?: Record<string, string[]>;
 }
 
-interface ApiState {
+interface ApiState<TData = unknown> {
   isLoading: boolean;
   isSuccess: boolean;
   isError: boolean;
-  data: any;
+  data: TData | null;
   errors: Record<string, string[]>;
 }
 
-export function useApiSubmit() {
-  const [state, setState] = useState<ApiState>({
+export function useApiSubmit<TResponseData = unknown, TBody = unknown>() {
+  const [state, setState] = useState<ApiState<TResponseData>>({
     isLoading: false,
     isSuccess: false,
     isError: false,
@@ -26,11 +26,11 @@ export function useApiSubmit() {
     errors: {},
   });
 
-  const submit = useCallback(async <T = any>(
+  const submit = useCallback(async (
     url: string,
-    data: any,
+    data: TBody,
     options: RequestInit = {}
-  ): Promise<ApiResponse<T>> => {
+  ): Promise<ApiResponse<TResponseData>> => {
     setState(prev => ({
       ...prev,
       isLoading: true,
@@ -50,14 +50,14 @@ export function useApiSubmit() {
         ...options,
       });
 
-      const result = await response.json();
+      const result = (await response.json()) as ApiResponse<TResponseData>;
 
       if (response.ok) {
         setState({
           isLoading: false,
           isSuccess: true,
           isError: false,
-          data: result.data,
+          data: (result.data as TResponseData | undefined) ?? null,
           errors: {},
         });
 
