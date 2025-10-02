@@ -39,3 +39,4 @@ logs/
 docker-compose.override.yml
 planejamento/
 PLANO.md
+mvp-plano.md
