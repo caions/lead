@@ -19,7 +19,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         
         <input
           ref={ref}
-          className={`input-field ${error ? 'border-red-500 focus:ring-red-500' : ''} ${className}`}
+          className={`input-field text-gray-900 placeholder-gray-500 ${error ? 'border-red-500 focus:ring-red-500' : ''} ${className}`}
           {...props}
         />
         

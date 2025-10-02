@@ -19,7 +19,7 @@ const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(
         
         <textarea
           ref={ref}
-          className={`input-field resize-none ${error ? 'border-red-500 focus:ring-red-500' : ''} ${className}`}
+          className={`input-field resize-none text-gray-900 placeholder-gray-500 ${error ? 'border-red-500 focus:ring-red-500' : ''} ${className}`}
           rows={4}
           {...props}
         />

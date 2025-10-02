@@ -2,6 +2,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Container from '@/components/Container';
 import Card from '@/components/Card';
+import LeadForm from '@/components/LeadForm';
 
 export default function HomePage() {
   return (
@@ -19,7 +20,7 @@ export default function HomePage() {
             </p>
           </div>
 
-          <div className="grid-responsive">
+          <div className="grid-responsive mb-12">
             {/* Card de Funcionalidades */}
             <Card hover className="text-center">
               <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
@@ -70,25 +71,39 @@ export default function HomePage() {
             </Card>
           </div>
 
+          {/* Formulário de Captura de Leads */}
+          <div id="formulario" className="mb-12">
+            <div className="text-center mb-8">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                Cadastre-se Agora
+              </h2>
+              <p className="text-lg text-gray-600">
+                Preencha o formulário abaixo e nossa equipe entrará em contato
+              </p>
+            </div>
+            
+            <LeadForm />
+          </div>
+
           {/* Call to Action */}
-          <div className="text-center mt-12">
+          <div className="text-center">
             <Card className="bg-gradient-to-r from-blue-600 to-blue-700 text-white border-0">
               <h2 className="text-2xl font-bold mb-4">Pronto para Começar?</h2>
               <p className="text-blue-100 mb-6">
-                Acesse o formulário público para capturar leads ou faça login no painel administrativo
+                Acesse o painel administrativo para gerenciar todos os leads capturados
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <a 
-                  href="#formulario" 
+                  href="/admin/login" 
                   className="btn-primary bg-white text-blue-600 hover:bg-gray-100"
                 >
-                  Ver Formulário
+                  Login Admin
                 </a>
                 <a 
-                  href="/admin/login" 
+                  href="/admin/leads" 
                   className="btn-secondary bg-blue-500 hover:bg-blue-400 text-white border-blue-400"
                 >
-                  Login Admin
+                  Ver Leads
                 </a>
               </div>
             </Card>
