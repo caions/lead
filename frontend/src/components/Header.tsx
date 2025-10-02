@@ -2,14 +2,17 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
+import Button from '@/components/Button';
 
 interface HeaderProps {
   title?: string;
   showNavigation?: boolean;
 }
 
-export default function Header({ title = "Sistema de Gestão de Leads", showNavigation = true }: HeaderProps) {
+export default function Header({ title = "Sistema de Gestão de Leads", showNavigation = true }: Readonly<HeaderProps>) {
   const pathname = usePathname();
+  const { isAuthenticated, user, logout } = useAuth();
 
   return (
     <header className="header">
@@ -34,18 +37,36 @@ export default function Header({ title = "Sistema de Gestão de Leads", showNavi
               >
                 Formulário
               </Link>
-              <Link 
-                href="/admin/login" 
-                className={`nav-link ${pathname === '/admin/login' ? 'nav-link-active' : ''}`}
-              >
-                Login Admin
-              </Link>
-              <Link 
-                href="/admin/leads" 
-                className={`nav-link ${pathname.startsWith('/admin/leads') ? 'nav-link-active' : ''}`}
-              >
-                Leads
-              </Link>
+              
+              {isAuthenticated ? (
+                <>
+                  <Link 
+                    href="/admin/leads" 
+                    className={`nav-link ${pathname.startsWith('/admin/leads') ? 'nav-link-active' : ''}`}
+                  >
+                    Leads
+                  </Link>
+                  <div className="flex items-center space-x-3 ml-4 pl-4 border-l border-gray-200">
+                    <span className="text-sm text-gray-600">
+                      Olá, {user?.username}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={logout}
+                    >
+                      Sair
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <Link 
+                  href="/admin/login" 
+                  className={`nav-link ${pathname === '/admin/login' ? 'nav-link-active' : ''}`}
+                >
+                  Login Admin
+                </Link>
+              )}
             </nav>
           )}
 
