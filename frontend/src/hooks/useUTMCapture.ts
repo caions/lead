@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 interface UTMParams {
   utm_source?: string;
@@ -146,11 +146,11 @@ export function useUTMCapture() {
     }
   }, []);
 
-  const getUTMData = (): UTMData => {
+  const getUTMData = useCallback((): UTMData => {
     return utmData;
-  };
+  }, [utmData]);
 
-  const getUTMString = (): string => {
+  const getUTMString = useCallback((): string => {
     const params = new URLSearchParams();
     
     Object.entries(utmData).forEach(([key, value]) => {
@@ -160,9 +160,9 @@ export function useUTMCapture() {
     });
 
     return params.toString();
-  };
+  }, [utmData]);
 
-  const getUTMSummary = (): string => {
+  const getUTMSummary = useCallback((): string => {
     const parts: string[] = [];
     
     if (utmData.utm_source) parts.push(`Source: ${utmData.utm_source}`);
@@ -172,7 +172,7 @@ export function useUTMCapture() {
     if (utmData.fbclid) parts.push('Facebook Ads');
     
     return parts.length > 0 ? parts.join(' | ') : 'Direct/Organic';
-  };
+  }, [utmData]);
 
   return {
     utmData,
