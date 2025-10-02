@@ -5,8 +5,9 @@ import Card from '@/components/Card';
 import Input from '@/components/Input';
 import Textarea from '@/components/Textarea';
 import Button from '@/components/Button';
-import Alert from '@/components/Alert';
 import { useUTMCapture } from '@/hooks/useUTMCapture';
+import { useApiSubmit } from '@/hooks/useApiSubmit';
+import { useToastContext } from '@/contexts/ToastContext';
 
 interface FormData {
   nome: string;
@@ -46,12 +47,11 @@ export default function LeadForm() {
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<'success' | 'error' | null>(null);
-  const [submitMessage, setSubmitMessage] = useState('');
 
-  // Hook para captura de UTMs
+  // Hooks para funcionalidades avançadas
   const { utmData, getUTMData } = useUTMCapture();
+  const { isLoading, submit } = useApiSubmit();
+  const { success, error } = useToastContext();
 
   // Atualizar formData com UTMs capturados
   React.useEffect(() => {
@@ -179,24 +179,12 @@ export default function LeadForm() {
       return;
     }
 
-    setIsSubmitting(true);
-    setSubmitStatus(null);
-    setSubmitMessage('');
-
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/leads`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
+      const result = await submit(`${process.env.NEXT_PUBLIC_API_URL}/api/leads`, formData);
 
-      const result = await response.json();
-
-      if (response.ok) {
-        setSubmitStatus('success');
-        setSubmitMessage('Lead cadastrado com sucesso! Entraremos em contato em breve.');
+      if (result.success) {
+        // Sucesso - mostrar toast e limpar formulário
+        success('Lead cadastrado com sucesso! Entraremos em contato em breve.');
         
         // Limpar formulário após sucesso
         setFormData({
@@ -215,40 +203,30 @@ export default function LeadForm() {
           fbclid: '',
         });
         setErrors({});
+        
+        // Scroll para o topo do formulário
+        document.getElementById('formulario')?.scrollIntoView({ behavior: 'smooth' });
       } else {
-        setSubmitStatus('error');
-        setSubmitMessage(result.message || 'Erro ao cadastrar lead. Tente novamente.');
+        // Erro - mostrar toast de erro
+        error(result.message || 'Erro ao cadastrar lead. Tente novamente.');
       }
-    } catch (error) {
-      console.error('Erro ao enviar formulário:', error);
-      setSubmitStatus('error');
-      setSubmitMessage('Erro de conexão. Verifique sua internet e tente novamente.');
-    } finally {
-      setIsSubmitting(false);
+    } catch (err) {
+      console.error('Erro ao enviar formulário:', err);
+      error('Erro de conexão. Verifique sua internet e tente novamente.');
     }
   };
 
   return (
     <div className="max-w-2xl mx-auto">
-      <Card>
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Cadastre-se e Receba Nossas Ofertas
-          </h2>
-          <p className="text-gray-600">
-            Preencha o formulário abaixo e nossa equipe entrará em contato
-          </p>
-        </div>
-
-        {submitStatus && (
-          <Alert 
-            type={submitStatus} 
-            className="mb-6"
-            onClose={() => setSubmitStatus(null)}
-          >
-            {submitMessage}
-          </Alert>
-        )}
+        <Card>
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              Cadastre-se e Receba Nossas Ofertas
+            </h2>
+            <p className="text-gray-600">
+              Preencha o formulário abaixo e nossa equipe entrará em contato
+            </p>
+          </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Dados Pessoais */}
@@ -384,10 +362,10 @@ export default function LeadForm() {
               variant="primary"
               size="lg"
               fullWidth
-              loading={isSubmitting}
-              disabled={isSubmitting}
+              loading={isLoading}
+              disabled={isLoading}
             >
-              {isSubmitting ? 'Enviando...' : 'Cadastrar Lead'}
+              {isLoading ? 'Enviando...' : 'Cadastrar Lead'}
             </Button>
           </div>
 

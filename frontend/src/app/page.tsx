@@ -3,7 +3,6 @@ import Footer from '@/components/Footer';
 import Container from '@/components/Container';
 import Card from '@/components/Card';
 import LeadForm from '@/components/LeadForm';
-import UTMDisplay from '@/components/UTMDisplay';
 
 export default function HomePage() {
   return (
